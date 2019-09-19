@@ -8,6 +8,11 @@
   {default, 1}
 ]}.
 
+{mapping, "emqx.kafka.bridge.producer", "emqx_kafka_bridge.producer", [
+  {datatype, string},
+  {default, "retry_backoff_ms:3000,topic_restart_delay_seconds:10,partition_restart_delay_seconds:3"}
+]}.
+
 {mapping, "emqx.kafka.bridge.client.string", "emqx_kafka_bridge.client", [
   {datatype, string}
 ]}.
@@ -50,6 +55,15 @@
           [Host, Port] = string:tokens(X, ":"),
           {string:trim(Host), list_to_integer(string:trim(Port))}
         end, BrokerList)
+end}.
+
+{translation, "emqx_kafka_bridge.producer", fun(Conf) ->
+  Producer = cuttlefish:conf_get("emqx.kafka.bridge.producer", Conf),
+  ProducerConfig = string:split(Producer, ",", all),
+        lists:map(fun(X)->
+          [Key, Value] = string:tokens(X, ":"),
+          {list_to_atom(string:trim(Key)), list_to_integer(string:trim(Value))}
+        end, ProducerConfig)
 end}.
 
 {translation, "emqx_kafka_bridge.client", fun(Conf) ->
